@@ -167,7 +167,7 @@ CloudFormation do
     Resource('Task') do
       Type 'AWS::ECS::TaskDefinition'
       Property('ContainerDefinitions', definitions)
-      RequiresCompatibilities defined?(task_type) ? [task_type] : ['EC2']
+      Property('RequiresCompatibilities', defined?(task_type) ? [task_type] : ['EC2'])
   
       if defined?(cpu)
         Property('Cpu', cpu)
