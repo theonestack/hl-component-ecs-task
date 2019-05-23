@@ -1,0 +1,10 @@
+test_metadata:
+  type: config
+  name: fargate
+  description: Provision a fargate based ecs task
+
+task_definition:
+  schema:
+    repo: myrepo
+    image: backend
+    tag_param: SchemaTag
