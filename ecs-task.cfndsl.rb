@@ -4,16 +4,13 @@ CloudFormation do
     if defined?(network_mode) && network_mode == 'awsvpc'
       awsvpc_enabled = true
     end
-  
-    if awsvpc_enabled
-      az_conditions_resources('SubnetCompute', maximum_availability_zones)
-    end
+
   
     log_retention = 7 unless defined?(log_retention)
-    Resource('LogGroup') {
-      Type 'AWS::Logs::LogGroup'
-      Property('LogGroupName', Ref('AWS::StackName'))
-      Property('RetentionInDays', "#{log_retention}")
+
+    Logs_LogGroup('LogGroup') {
+      LogGroupName Ref('AWS::StackName')
+      RetentionInDays "#{log_retention}"
     }
   
     definitions, task_volumes = Array.new(2){[]}
@@ -164,51 +161,34 @@ CloudFormation do
       end
     end
   
-    Resource('Task') do
-      Type 'AWS::ECS::TaskDefinition'
-      Property('ContainerDefinitions', definitions)
-      Property('RequiresCompatibilities', defined?(task_type) ? [task_type] : ['EC2'])
+    ECS_TaskDefinition('Task') do
+      ContainerDefinitions definitions
+      RequiresCompatibilities defined?(task_type) ? [task_type] : ['EC2']
   
       if defined?(cpu)
-        Property('Cpu', cpu)
+        Cpu cpu
       end
   
       if defined?(memory)
-        Property('Memory', memory)
+        Memory memory
       end
   
       if defined?(network_mode)
-        Property('NetworkMode', network_mode)
+        NetworkMode network_mode
       end
   
       if task_volumes.any?
-        Property('Volumes', task_volumes)
+        Volumes task_volumes
       end
   
       if defined?(iam_policies)
-        Property('TaskRoleArn', Ref('TaskRole'))
-        Property('ExecutionRoleArn', Ref('ExecutionRole'))
+        TaskRoleArn Ref('TaskRole')
+        ExecutionRoleArn Ref('ExecutionRole')
       end
   
     end if defined? task_definition
   
-  
-    # has_security_group = false
-    # if ((defined? securityGroups) && (securityGroups.has_key?(component_name)))
-    #   has_security_group = true
-    # end
-  
-    # if awsvpc_enabled == true
-    #   sg_name = 'SecurityGroupBackplane'
-    #   if has_security_group == true
-    #     EC2_SecurityGroup('ServiceSecurityGroup') do
-    #       VpcId Ref('VPCId')
-    #       GroupDescription "#{component_name} ECS service"
-    #       SecurityGroupIngress sg_create_rules(securityGroups[component_name], ip_blocks)
-    #     end
-    #     sg_name = 'ServiceSecurityGroup'
-    #   end
-    # end
+
   
     Output("EcsTaskArn") {
       Value(Ref('Task'))

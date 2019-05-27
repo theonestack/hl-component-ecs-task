@@ -2,23 +2,12 @@ CfhighlanderTemplate do
 
     DependsOn 'vpc' if ((defined? network_mode) && (network_mode == "awsvpc"))
   
-    Description "ecs-service - #{component_name} - #{component_version}"
+    Description "ecs-task - #{component_name} - #{component_version}"
   
     Parameters do
       ComponentParam 'EnvironmentName', 'dev', isGlobal: true
       ComponentParam 'EnvironmentType', 'development', allowedValues: ['development','production'], isGlobal: true
       ComponentParam 'EcsCluster'
-  
-      if (defined? targetgroup) || ((defined? network_mode) && (network_mode == "awsvpc"))
-        ComponentParam 'VPCId', type: 'AWS::EC2::VPC::Id'
-      end
-  
-      if ((defined? network_mode) && (network_mode == "awsvpc"))
-        maximum_availability_zones.times do |az|
-          ComponentParam "SubnetCompute#{az}"
-        end
-        ComponentParam 'SecurityGroupBackplane'
-      end
   
       task_definition.each do |task_def, task|
         if task.has_key?('tag_param')
