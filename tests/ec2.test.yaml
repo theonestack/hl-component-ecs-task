@@ -8,3 +8,6 @@ task_definition:
     repo: myrepo
     image: backend
     tag_param: SchemaTag
+
+tags:
+  CostCenter: TeamA
