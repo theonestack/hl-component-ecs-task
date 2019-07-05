@@ -194,10 +194,6 @@ CloudFormation do
         ExecutionRoleArn Ref('ExecutionRole')
       end
 
-      if defined?(family)
-        Family FnSub(family)
-      end
-
       Tags task_tags
 
     end if defined? task_definition
