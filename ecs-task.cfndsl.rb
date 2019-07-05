@@ -194,7 +194,7 @@ CloudFormation do
         ExecutionRoleArn Ref('ExecutionRole')
       end
 
-      if defined? family
+      if defined?(family)
         Family FnSub(family)
       end
 
