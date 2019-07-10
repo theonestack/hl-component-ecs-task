@@ -1,10 +1,5 @@
 CloudFormation do
 
-    awsvpc_enabled = false
-    if defined?(network_mode) && network_mode == 'awsvpc'
-      awsvpc_enabled = true
-    end
-
     task_tags = []
     task_tags << { Key: "Name", Value: component_name }
     task_tags << { Key: "Environment", Value: Ref("EnvironmentName") }
@@ -21,7 +16,7 @@ CloudFormation do
       RetentionInDays "#{log_retention}"
     }
 
-    definitions, task_volumes = Array.new(2){[]}
+    definitions, task_volumes, secrets = Array.new(3){[]}
 
     task_definition.each do |task_name, task|
 
@@ -91,8 +86,13 @@ CloudFormation do
       # add docker volumes
       if task.key?('mounts')
         task['mounts'].each do |mount|
-          parts = mount.split(':')
-          mount_points << { ContainerPath: parts[0], SourceVolume: parts[1], ReadOnly: (parts[2] == 'ro' ? true : false) }
+          if mount.is_a? String
+            puts mount
+            parts = mount.split(':',2)
+            mount_points << { ContainerPath: FnSub(parts[0]), SourceVolume: FnSub(parts[1]), ReadOnly: (parts[2] == 'ro' ? true : false) }
+          else
+            mount_points << mount
+          end
         end
         task_def.merge!({MountPoints: mount_points })
       end
@@ -122,6 +122,11 @@ CloudFormation do
       task_def.merge!({HealthCheck: task['healthcheck'] }) if task.key?('healthcheck')
       task_def.merge!({WorkingDirectory: task['working_dir'] }) if task.key?('working_dir')
 
+      if task.key?('secrets')
+        secrets.push(*task['secrets'].values)
+        task_def.merge!({Secrets: task['secrets'].map {|k,v| { Name: k, ValueFrom: v }} })
+      end
+
       definitions << task_def
 
     end if defined? task_definition
@@ -129,9 +134,13 @@ CloudFormation do
     # add docker volumes
     if defined?(volumes)
       volumes.each do |volume|
-        parts = volume.split(':')
-        object = { Name: parts[0]}
-        object.merge!({ Host: { SourcePath: parts[1] }}) if parts[1]
+        if volume.is_a? String
+          parts = volume.split(':')
+          object = { Name: FnSub(parts[0])}
+          object.merge!({ Host: { SourcePath: FnSub(parts[1]) }}) if parts[1]
+        else
+          object = volume
+        end
         task_volumes << object
       end
     end
@@ -166,6 +175,12 @@ CloudFormation do
         AssumeRolePolicyDocument service_role_assume_policy('ecs-tasks')
         Path '/'
         ManagedPolicyArns ["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"]
+
+        if secrets.any?
+          resources = secrets.map {|secret| FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{secret}")}
+          Policies [iam_policy_allow('ssm-secrets',%(ssm:GetParameters),secrets)]
+        end
+
       end
     end
 
