@@ -86,12 +86,7 @@ CloudFormation do
       # add docker volumes
       if task.key?('mounts')
         task['mounts'].each do |mount|
-<<<<<<< HEAD
-          if mount.is_a? String
-            puts mount
-=======
           if mount.is_a? String 
->>>>>>> Support for using ref with volumes/mounts
             parts = mount.split(':',2)
             mount_points << { ContainerPath: FnSub(parts[0]), SourceVolume: FnSub(parts[1]), ReadOnly: (parts[2] == 'ro' ? true : false) }
           else
@@ -138,11 +133,7 @@ CloudFormation do
     # add docker volumes
     if defined?(volumes)
       volumes.each do |volume|
-<<<<<<< HEAD
-        if volume.is_a? String
-=======
         if volume.is_a? String 
->>>>>>> Support for using ref with volumes/mounts
           parts = volume.split(':')
           object = { Name: FnSub(parts[0])}
           object.merge!({ Host: { SourcePath: FnSub(parts[1]) }}) if parts[1]
