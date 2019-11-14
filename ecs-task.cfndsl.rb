@@ -1,5 +1,7 @@
 CloudFormation do
 
+    export = defined?(export_name) ? export_name : component_name
+
     task_tags = []
     task_tags << { Key: "Name", Value: component_name }
     task_tags << { Key: "Environment", Value: Ref("EnvironmentName") }
@@ -214,7 +216,7 @@ CloudFormation do
 
     Output("EcsTaskArn") {
       Value(Ref('Task'))
-      Export FnSub("${EnvironmentName}-#{component_name}-EcsTaskArn")
+      Export FnSub("${EnvironmentName}-#{export}-EcsTaskArn")
     }
 
   end
