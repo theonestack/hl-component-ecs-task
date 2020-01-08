@@ -1,18 +1,18 @@
 CloudFormation do
 
-    export = defined?(export_name) ? export_name : component_name
+    export = external_parameters.fetch(:export_name, external_parameters[:component_name])
 
     task_tags = []
-    task_tags << { Key: "Name", Value: component_name }
+    task_tags << { Key: "Name", Value: external_parameters[:component_name] }
     task_tags << { Key: "Environment", Value: Ref("EnvironmentName") }
     task_tags << { Key: "EnvironmentType", Value: Ref("EnvironmentType") }
 
+    tags = external_parameters.fetch(:tags, [])
     tags.each do |key,value|
       task_tags << { Key: key, Value: value }
-    end if defined? tags
+    end
 
-    log_retention = 7 unless defined?(log_retention)
-
+    log_retention = external_parameters.fetch(:log_retention, 7)
     Logs_LogGroup('LogGroup') {
       LogGroupName Ref('AWS::StackName')
       RetentionInDays "#{log_retention}"
@@ -20,6 +20,7 @@ CloudFormation do
 
     definitions, task_volumes, secrets = Array.new(3){[]}
 
+    task_definition = external_parameters.fetch(:task_definition, {})
     task_definition.each do |task_name, task|
 
       env_vars, mount_points, ports = Array.new(3){[]}
@@ -130,23 +131,24 @@ CloudFormation do
 
       definitions << task_def
 
-    end if defined? task_definition
-
-    # add docker volumes
-    if defined?(volumes)
-      volumes.each do |volume|
-        if volume.is_a? String 
-          parts = volume.split(':')
-          object = { Name: FnSub(parts[0])}
-          object.merge!({ Host: { SourcePath: FnSub(parts[1]) }}) if parts[1]
-        else
-          object = volume
-        end
-        task_volumes << object
-      end
     end
 
-    if defined?(iam_policies)
+    # add docker volumes
+    volumes = external_parameters.fetch(:volume, [])
+    volumes.each do |volume|
+      if volume.is_a? String 
+        parts = volume.split(':')
+        object = { Name: FnSub(parts[0])}
+        object.merge!({ Host: { SourcePath: FnSub(parts[1]) }}) if parts[1]
+      else
+        object = volume
+      end
+      task_volumes << object
+    end
+
+
+    iam_policies = external_parameters.fetch(:iam_policies, {})
+    unless iam_policies.empty?
 
       policies = []
       iam_policies.each do |name,policy|
@@ -185,34 +187,35 @@ CloudFormation do
       end
     end
 
+    task_type = external_parameters.fetch(:task_type, ['EC2'])
     ECS_TaskDefinition('Task') do
       ContainerDefinitions definitions
-      RequiresCompatibilities defined?(task_type) ? [task_type] : ['EC2']
+      RequiresCompatibilities task_type
 
-      if defined?(cpu)
-        Cpu cpu
+      if external_parameters[:cpu]
+        Cpu external_parameters[:cpu]
       end
 
-      if defined?(memory)
-        Memory memory
+      if external_parameters[:memory]
+        Memory external_parameters[:memory]
       end
 
-      if defined?(network_mode)
-        NetworkMode network_mode
+      if external_parameters[:network_mode]
+        NetworkMode external_parameters[:network_mode]
       end
 
       if task_volumes.any?
         Volumes task_volumes
       end
 
-      if defined?(iam_policies)
+      unless iam_policies.empty?
         TaskRoleArn Ref('TaskRole')
         ExecutionRoleArn Ref('ExecutionRole')
       end
 
       Tags task_tags
 
-    end if defined? task_definition
+    end
 
     Output("EcsTaskArn") {
       Value(Ref('Task'))
