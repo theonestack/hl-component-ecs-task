@@ -187,10 +187,10 @@ CloudFormation do
       end
     end
 
-    task_type = external_parameters.fetch(:task_type, ['EC2'])
+    task_type = external_parameters.fetch(:task_type, 'EC2')
     ECS_TaskDefinition('Task') do
       ContainerDefinitions definitions
-      RequiresCompatibilities task_type
+      RequiresCompatibilities [task_type]
 
       if external_parameters[:cpu]
         Cpu external_parameters[:cpu]
