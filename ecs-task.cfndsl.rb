@@ -134,7 +134,7 @@ CloudFormation do
     end
 
     # add docker volumes
-    volumes = external_parameters.fetch(:volume, [])
+    volumes = external_parameters.fetch(:volumes, [])
     volumes.each do |volume|
       if volume.is_a? String 
         parts = volume.split(':')
