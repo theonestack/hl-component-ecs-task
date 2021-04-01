@@ -282,38 +282,42 @@ CloudFormation do
     end
 
     task_type = external_parameters.fetch(:task_type, 'EC2')
-    ECS_TaskDefinition('Task') do
-      ContainerDefinitions definitions
-      RequiresCompatibilities [task_type]
+    unless task_definition.empty?
 
-      if external_parameters[:cpu]
-        Cpu external_parameters[:cpu]
+      ECS_TaskDefinition('Task') do
+        ContainerDefinitions definitions
+        RequiresCompatibilities [task_type]
+
+        if external_parameters[:cpu]
+          Cpu external_parameters[:cpu]
+        end
+
+        if external_parameters[:memory]
+          Memory external_parameters[:memory]
+        end
+
+        if external_parameters[:network_mode]
+          NetworkMode external_parameters[:network_mode]
+        end
+
+        if task_volumes.any?
+          Volumes task_volumes
+        end
+
+        unless iam_policies.empty?
+          TaskRoleArn Ref('TaskRole')
+          ExecutionRoleArn Ref('ExecutionRole')
+        end
+
+        Tags task_tags
+
       end
 
-      if external_parameters[:memory]
-        Memory external_parameters[:memory]
-      end
 
-      if external_parameters[:network_mode]
-        NetworkMode external_parameters[:network_mode]
-      end
-
-      if task_volumes.any?
-        Volumes task_volumes
-      end
-
-      unless iam_policies.empty?
-        TaskRoleArn Ref('TaskRole')
-        ExecutionRoleArn Ref('ExecutionRole')
-      end
-
-      Tags task_tags
-
+        Output("EcsTaskArn") {
+          Value(Ref('Task'))
+          Export FnSub("${EnvironmentName}-#{export}-EcsTaskArn")
+        }
     end
-
-    Output("EcsTaskArn") {
-      Value(Ref('Task'))
-      Export FnSub("${EnvironmentName}-#{export}-EcsTaskArn")
-    }
 
   end
