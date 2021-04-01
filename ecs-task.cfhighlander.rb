@@ -2,6 +2,8 @@ CfhighlanderTemplate do
 
     Description "ecs-task - #{component_name} - #{component_version}"
 
+    DependsOn 'lib-iam'
+
     Parameters do
       ComponentParam 'EnvironmentName', 'dev', isGlobal: true
       ComponentParam 'EnvironmentType', 'development', allowedValues: ['development','production'], isGlobal: true
