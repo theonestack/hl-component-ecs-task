@@ -13,8 +13,9 @@ CloudFormation do
     end
 
     log_retention = external_parameters.fetch(:log_retention, 7)
+    log_group_name = external_parameters.fetch(:log_group_name, Ref('AWS::StackName'))
     Logs_LogGroup('LogGroup') {
-      LogGroupName Ref('AWS::StackName')
+      LogGroupName log_group_name
       RetentionInDays "#{log_retention}"
     }
 
