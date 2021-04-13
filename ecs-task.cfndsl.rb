@@ -56,6 +56,9 @@ CloudFormation do
 
       task_def.merge!({ Ulimits: task['ulimits'] }) if task.has_key?('ulimits')
 
+      task_def.merge!({ StartTimeout: task['start_timeout'] }) if task.has_key?('start_timeout')
+      task_def.merge!({ StopTimeout: task['stop_timeout'] }) if task.has_key?('stop_timeout')
+
 
       if !(task['env_vars'].nil?)
         task['env_vars'].each do |name,value|
