@@ -246,6 +246,19 @@ CloudFormation do
 
     iam_policies = external_parameters.fetch(:iam_policies, {})
     service_discovery = external_parameters.fetch(:service_discovery, {})
+    enable_execute_command = external_parameters.fetch(:enable_execute_command, false)
+
+    if enable_execute_command
+      iam_policies['ssm-session-manager'] = {
+        'action' => %w(
+          ssmmessages:CreateControlChannel
+          ssmmessages:CreateDataChannel
+          ssmmessages:OpenControlChannel
+          ssmmessages:OpenDataChannel
+        )
+      }
+    end
+
     unless iam_policies.empty?
   
       unless service_discovery.empty?
