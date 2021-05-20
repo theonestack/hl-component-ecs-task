@@ -109,6 +109,7 @@ CloudFormation do
       end
 
       # add volumes from
+      volumes_from = []
       if task.key?('volumes_from')
         if task['volumes_from'].kind_of?(Array)
           task['volumes_from'].each do |source_container|
