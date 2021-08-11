@@ -32,7 +32,7 @@ describe 'compiled component' do
     it 'has property One container definition ' do
       expect(properties["ContainerDefinitions"].count).to eq(1)
       expect(properties["ContainerDefinitions"]).to eq([{
-        "Image"=>{"Fn::Join"=>["", ["myrepo/", "backend", ":", {"Ref"=>"SchemaTag"}]]},
+        "Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"myrepo/"}, "backend", ":", {"Ref"=>"SchemaTag"}]]},
         "LogConfiguration"=>
             {
               "LogDriver"=>"awslogs",

@@ -29,7 +29,7 @@ CloudFormation do
 
       name = task.has_key?('name') ? task['name'] : task_name
 
-      image_repo = task.has_key?('repo') ? "#{task['repo']}/" : ''
+      image_repo = task.has_key?('repo') ? FnSub("#{task['repo']}/") : ''
       image_name = task.has_key?('image') ? task['image'] : task_name
       image_tag = task.has_key?('tag') ? "#{task['tag']}" : 'latest'
       image_tag = task.has_key?('tag_param') ? Ref("#{task['tag_param']}") : image_tag
