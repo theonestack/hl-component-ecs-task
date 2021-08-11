@@ -33,7 +33,7 @@ describe 'compiled component' do
       expect(properties["ContainerDefinitions"].count).to eq(1)
       expect(properties["ContainerDefinitions"]).to eq([{
         "Name"=>"nginx",
-        "Image"=>{"Fn::Join"=>["", ["nginx/", "nginx", ":", "latest"]]},
+        "Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"nginx/"}, "nginx", ":", "latest"]]},
         "LogConfiguration"=> {
               "LogDriver"=>"awslogs",
               "Options"=> {
