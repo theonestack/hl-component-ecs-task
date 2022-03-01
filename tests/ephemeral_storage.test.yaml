@@ -1,0 +1,17 @@
+test_metadata:
+  type: config
+  name: ephemeral_storage
+  description: Provision a fargate based ecs task with ephemeral storage
+
+task_definition:
+  schema:
+    repo: myrepo
+    image: backend
+    tag_param: SchemaTag
+task_type: FARGATE
+network_mode: awsvpc
+maximum_availability_zones: 3
+cpu: 256
+memory: 512
+ephemeral_storage:
+  SizeInGiB: 50

@@ -327,6 +327,8 @@ CloudFormation do
           ExecutionRoleArn Ref('ExecutionRole')
         end
 
+        EphemeralStorage external_parameters[:ephemeral_storage] unless external_parameters[:ephemeral_storage].nil?
+
         Tags task_tags
 
       end
