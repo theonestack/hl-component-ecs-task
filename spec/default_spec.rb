@@ -18,7 +18,7 @@ describe 'compiled component' do
     it 'has a Log Group' do
       expect(template["Resources"]['LogGroup']).to eq({
         "Type"=>"AWS::Logs::LogGroup",
-        "Properties"=>{"LogGroupName"=>{"Ref"=>"AWS::StackName"}, "RetentionInDays"=>"7"}
+        "Properties"=>{"LogGroupName"=>{"Ref"=>"AWS::StackName"}, "RetentionInDays"=>7}
       })
     end
   end
