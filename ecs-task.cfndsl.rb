@@ -16,7 +16,7 @@ CloudFormation do
     log_group_name = external_parameters.fetch(:log_group_name, Ref('AWS::StackName'))
     Logs_LogGroup('LogGroup') {
       LogGroupName log_group_name
-      RetentionInDays "#{log_retention}"
+      RetentionInDays log_retention
     }
 
     definitions, task_volumes, secrets = Array.new(4){[]}

@@ -1,0 +1,12 @@
+test_metadata:
+  type: config
+  name: ec2
+  description: Provision a ec2 based ecs task
+
+task_definition:
+  schema:
+    repo: myrepo
+    image: backend
+    tag_param: SchemaTag
+
+log_retention: "30"
