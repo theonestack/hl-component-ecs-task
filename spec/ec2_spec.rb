@@ -1,6 +1,6 @@
 require 'yaml'
 
-describe 'compiled component' do
+describe 'compiled component ecs-task' do
   
   context 'cftest' do
     it 'compiles test' do
@@ -9,50 +9,48 @@ describe 'compiled component' do
   end
   
   let(:template) { YAML.load_file("#{File.dirname(__FILE__)}/../out/tests/ec2/ecs-task.compiled.yaml") }
+  
+  context "Resource" do
 
-  context 'Resource Task' do
-    let(:properties) { template["Resources"]["Task"]["Properties"] }
+    
+    context "LogGroup" do
+      let(:resource) { template["Resources"]["LogGroup"] }
 
-    it 'has property RequiresCompatibilities ' do
-      expect(properties["RequiresCompatibilities"]).to eq(['EC2'])
+      it "is of type AWS::Logs::LogGroup" do
+          expect(resource["Type"]).to eq("AWS::Logs::LogGroup")
+      end
+      
+      it "to have property LogGroupName" do
+          expect(resource["Properties"]["LogGroupName"]).to eq({"Ref"=>"AWS::StackName"})
+      end
+      
+      it "to have property RetentionInDays" do
+          expect(resource["Properties"]["RetentionInDays"]).to eq(7)
+      end
+      
     end
     
-    it 'has property NetworkMode ' do
-      expect(properties["NetworkMode"]).to eq(nil)
-    end
+    context "Task" do
+      let(:resource) { template["Resources"]["Task"] }
 
-    it 'has property CPU ' do
-      expect(properties["Cpu"]).to eq(nil)
+      it "is of type AWS::ECS::TaskDefinition" do
+          expect(resource["Type"]).to eq("AWS::ECS::TaskDefinition")
+      end
+      
+      it "to have property ContainerDefinitions" do
+          expect(resource["Properties"]["ContainerDefinitions"]).to eq([{"Name"=>"schema", "Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"myrepo/backend"}, ":", {"Ref"=>"SchemaTag"}]]}, "LogConfiguration"=>{"LogDriver"=>"awslogs", "Options"=>{"awslogs-group"=>{"Ref"=>"LogGroup"}, "awslogs-region"=>{"Ref"=>"AWS::Region"}, "awslogs-stream-prefix"=>"schema"}}}])
+      end
+      
+      it "to have property RequiresCompatibilities" do
+          expect(resource["Properties"]["RequiresCompatibilities"]).to eq(["EC2"])
+      end
+      
+      it "to have property Tags" do
+          expect(resource["Properties"]["Tags"]).to eq([{"Key"=>"Name", "Value"=>"ecs-task"}, {"Key"=>"Environment", "Value"=>{"Ref"=>"EnvironmentName"}}, {"Key"=>"EnvironmentType", "Value"=>{"Ref"=>"EnvironmentType"}}, {"Key"=>"CostCenter", "Value"=>"TeamA"}])
+      end
+      
     end
-
-    it 'has property Memory ' do
-      expect(properties["Memory"]).to eq(nil)
-    end
-
-    it 'has property One container definition ' do
-      expect(properties["ContainerDefinitions"].count).to eq(1)
-      expect(properties["ContainerDefinitions"]).to eq([{
-        "Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"myrepo/"}, "backend", ":", {"Ref"=>"SchemaTag"}]]},
-        "LogConfiguration"=>
-            {
-              "LogDriver"=>"awslogs",
-              "Options"=> {
-                "awslogs-group"=>{"Ref"=>"LogGroup"},
-                "awslogs-region"=>{"Ref"=>"AWS::Region"},
-                "awslogs-stream-prefix"=>"schema"
-              }
-            },
-        "Name"=>"schema"
-      }])
-    end
-
-    it 'has property Tags' do
-      expect(properties["Tags"]).to eq([
-        {"Key"=>"Name", "Value"=>"ecs-task"}, 
-        {"Key"=>"Environment", "Value"=>{"Ref"=>"EnvironmentName"}}, 
-        {"Key"=>"EnvironmentType", "Value"=>{"Ref"=>"EnvironmentType"}},
-        {"Key"=>"CostCenter", "Value"=>"TeamA"}
-      ])
-    end
+    
   end
+
 end
