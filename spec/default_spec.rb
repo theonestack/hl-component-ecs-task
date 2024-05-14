@@ -1,6 +1,6 @@
 require 'yaml'
 
-describe 'compiled component' do
+describe 'compiled component ecs-task' do
   
   context 'cftest' do
     it 'compiles test' do
@@ -9,18 +9,27 @@ describe 'compiled component' do
   end
   
   let(:template) { YAML.load_file("#{File.dirname(__FILE__)}/../out/tests/default/ecs-task.compiled.yaml") }
+  
+  context "Resource" do
 
-  context 'Resources' do
-    it 'has No Task ' do
-      expect(template["Resources"]['Task']).to eq(nil)
-    end
+    
+    context "LogGroup" do
+      let(:resource) { template["Resources"]["LogGroup"] }
 
-    it 'has a Log Group' do
-      expect(template["Resources"]['LogGroup']).to eq({
-        "Type"=>"AWS::Logs::LogGroup",
-        "Properties"=>{"LogGroupName"=>{"Ref"=>"AWS::StackName"}, "RetentionInDays"=>7}
-      })
+      it "is of type AWS::Logs::LogGroup" do
+          expect(resource["Type"]).to eq("AWS::Logs::LogGroup")
+      end
+      
+      it "to have property LogGroupName" do
+          expect(resource["Properties"]["LogGroupName"]).to eq({"Ref"=>"AWS::StackName"})
+      end
+      
+      it "to have property RetentionInDays" do
+          expect(resource["Properties"]["RetentionInDays"]).to eq(7)
+      end
+      
     end
+    
   end
 
 end

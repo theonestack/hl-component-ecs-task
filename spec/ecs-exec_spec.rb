@@ -4,11 +4,11 @@ describe 'compiled component ecs-task' do
   
   context 'cftest' do
     it 'compiles test' do
-      expect(system("cfhighlander cftest #{@validate} --tests tests/secrets.test.yaml")).to be_truthy
+      expect(system("cfhighlander cftest #{@validate} --tests tests/ecs-exec.test.yaml")).to be_truthy
     end      
   end
   
-  let(:template) { YAML.load_file("#{File.dirname(__FILE__)}/../out/tests/secrets/ecs-task.compiled.yaml") }
+  let(:template) { YAML.load_file("#{File.dirname(__FILE__)}/../out/tests/ecs-exec/ecs-task.compiled.yaml") }
   
   context "Resource" do
 
@@ -46,7 +46,7 @@ describe 'compiled component ecs-task' do
       end
       
       it "to have property Policies" do
-          expect(resource["Properties"]["Policies"]).to eq([{"PolicyName"=>"s3", "PolicyDocument"=>{"Version"=>"2012-10-17", "Statement"=>[{"Sid"=>"s3", "Action"=>["s3:Get*"], "Resource"=>["*"], "Effect"=>"Allow"}]}}])
+          expect(resource["Properties"]["Policies"]).to eq([{"PolicyName"=>"ssm-session-manager", "PolicyDocument"=>{"Version"=>"2012-10-17", "Statement"=>[{"Sid"=>"ssmsessionmanager", "Action"=>["ssmmessages:CreateControlChannel", "ssmmessages:CreateDataChannel", "ssmmessages:OpenControlChannel", "ssmmessages:OpenDataChannel"], "Resource"=>["*"], "Effect"=>"Allow"}]}}])
       end
       
     end
@@ -70,10 +70,6 @@ describe 'compiled component ecs-task' do
           expect(resource["Properties"]["ManagedPolicyArns"]).to eq(["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"])
       end
       
-      it "to have property Policies" do
-          expect(resource["Properties"]["Policies"]).to eq([{"PolicyName"=>"ssm-secrets", "PolicyDocument"=>{"Version"=>"2012-10-17", "Statement"=>[{"Sid"=>"ssmsecrets", "Action"=>"ssm:GetParameters", "Resource"=>[{"Fn::Sub"=>"arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nginx/${EnvironmentName}/app/key"}, {"Fn::Sub"=>"arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nginx/${EnvironmentName}/app/secret"}], "Effect"=>"Allow"}]}}, {"PolicyName"=>"secretsmanager", "PolicyDocument"=>{"Version"=>"2012-10-17", "Statement"=>[{"Sid"=>"secretsmanager", "Action"=>"secretsmanager:GetSecretValue", "Resource"=>[{"Fn::Sub"=>"arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/dont/use/accesskeys-*"}, {"Ref"=>"EnvironmentName"}], "Effect"=>"Allow"}]}}, {"PolicyName"=>"ssm-secrets-inline", "PolicyDocument"=>{"Version"=>"2012-10-17", "Statement"=>[{"Sid"=>"ssmsecretsinline", "Action"=>"ssm:GetParameters", "Resource"=>[{"Fn::Sub"=>"arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nginx/${EnvironmentName}/api/key"}, {"Fn::Sub"=>"arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nginx/${EnvironmentName}/api/secret"}], "Effect"=>"Allow"}]}}])
-      end
-      
     end
     
     context "Task" do
@@ -84,11 +80,23 @@ describe 'compiled component ecs-task' do
       end
       
       it "to have property ContainerDefinitions" do
-          expect(resource["Properties"]["ContainerDefinitions"]).to eq([{"Name"=>"nginx", "Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"nginx/nginx"}, ":", "latest"]]}, "LogConfiguration"=>{"LogDriver"=>"awslogs", "Options"=>{"awslogs-group"=>{"Ref"=>"LogGroup"}, "awslogs-region"=>{"Ref"=>"AWS::Region"}, "awslogs-stream-prefix"=>"nginx"}}, "Secrets"=>[{"Name"=>"APP_KEY", "ValueFrom"=>{"Fn::Sub"=>"arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nginx/${EnvironmentName}/app/key"}}, {"Name"=>"APP_SECRET", "ValueFrom"=>{"Fn::Sub"=>"arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nginx/${EnvironmentName}/app/secret"}}, {"Name"=>"ACCESSKEY", "ValueFrom"=>{"Fn::Sub"=>"arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/dont/use/accesskeys"}}, {"Name"=>"SECRETKEY", "ValueFrom"=>{"Ref"=>"EnvironmentName"}}, {"Name"=>"API_KEY", "ValueFrom"=>{"Fn::Sub"=>"arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nginx/${EnvironmentName}/api/key"}}, {"Name"=>"API_SECRET", "ValueFrom"=>{"Fn::Sub"=>"arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/nginx/${EnvironmentName}/api/secret"}}]}])
+          expect(resource["Properties"]["ContainerDefinitions"]).to eq([{"Name"=>"schema", "Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"myrepo/backend"}, ":", {"Ref"=>"SchemaTag"}]]}, "LogConfiguration"=>{"LogDriver"=>"awslogs", "Options"=>{"awslogs-group"=>{"Ref"=>"LogGroup"}, "awslogs-region"=>{"Ref"=>"AWS::Region"}, "awslogs-stream-prefix"=>"schema"}}}])
       end
       
       it "to have property RequiresCompatibilities" do
-          expect(resource["Properties"]["RequiresCompatibilities"]).to eq(["EC2"])
+          expect(resource["Properties"]["RequiresCompatibilities"]).to eq(["FARGATE"])
+      end
+      
+      it "to have property Cpu" do
+          expect(resource["Properties"]["Cpu"]).to eq(256)
+      end
+      
+      it "to have property Memory" do
+          expect(resource["Properties"]["Memory"]).to eq(512)
+      end
+      
+      it "to have property NetworkMode" do
+          expect(resource["Properties"]["NetworkMode"]).to eq("awsvpc")
       end
       
       it "to have property TaskRoleArn" do
