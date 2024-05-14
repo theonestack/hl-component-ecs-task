@@ -38,7 +38,7 @@ CloudFormation do
       # create main definition
       task_def =  {
         Name: name,
-        Image: FnSub("#{image_repo}/#{image_name}\:#{image_tag}"),
+        Image: FnJoin('', [FnSub("#{image_repo}/#{image_name}"), ":", image_tag]),
         LogConfiguration: {
           LogDriver: 'awslogs',
           Options: {
