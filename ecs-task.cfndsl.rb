@@ -130,7 +130,7 @@ CloudFormation do
         mount_points << { ContainerPath: ebs_volume['container_path'], SourceVolume: Ref(:ebs_volume['name']), ReadOnly: false}
         volumes <<  {Name: Ref(:ebs_volume['name']), ConfiguredAtLaunch: true }
         task_def.merge!({MountPoints: mount_points })
-        task_def.merge!({Volumes: volumes })
+        task_def.merge!({Volumes: ebs_volumes })
       end
 
       # add port
