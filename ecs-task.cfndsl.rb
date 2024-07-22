@@ -120,6 +120,19 @@ CloudFormation do
         end
       end
 
+      # add ebs volumes
+      ebs_volumes = external_parameters.fetch(:ebs_volumes, [])
+      ebs_volumes.each do |ebs_volume|
+        EC2_Volume(ebs_volume['name']) do
+          Size 100
+          VolumeType "gp3"
+        end
+        mount_points << { ContainerPath: ebs_volume['container_path'], SourceVolume: Ref(:ebs_volume['name']), ReadOnly: false}
+        volumes <<  {Name: Ref(:ebs_volume['name']), ConfiguredAtLaunch: true }
+        task_def.merge!({MountPoints: mount_points })
+        task_def.merge!({Volumes: volumes })
+      end
+
       # add port
       if task.key?('ports')
         port_mapppings = []
@@ -235,19 +248,6 @@ CloudFormation do
         object = volume
       end
       task_volumes << object
-    end
-
-    # add ebs volumes
-    ebs_volumes = external_parameters.fetch(:ebs_volumes, [])
-    ebs_volumes.each do |ebs_volume|
-      EC2_Volume(ebs_volume['name']) do
-        Size 100
-        VolumeType "gp3"
-      end
-      mount_points << { ContainerPath: ebs_volume['container_path'], SourceVolume: Ref(:ebs_volume['name']), ReadOnly: false}
-      volumes <<  {Name: Ref(:ebs_volume['name']), ConfiguredAtLaunch: true }
-      task_def.merge!({MountPoints: mount_points })
-      task_def.merge!({Volumes: volumes })
     end
 
     # add task placement constraints 
