@@ -237,6 +237,16 @@ CloudFormation do
       task_volumes << object
     end
 
+    # add ebs volumes
+    ebs_volumes = external_parameters.fetch(:ebs_volumes, [])
+    ebs_volumes.each do |ebs_volume|
+          mount_points << { ContainerPath: ebs_volume['name'], SourceVolume: ebs_volume['source_volume'], ReadOnly: false}
+          volumes <<  {Name: ebs_volume['name'], ConfiguredAtLaunch: true }
+        end
+      task_def.merge!({MountPoints: mount_points })
+      task_def.merge!({Volumes: volumes })
+    end
+
     # add task placement constraints 
     task_constraints =[];
     task_placement_constraints = external_parameters.fetch(:task_placement_constraints, [])
