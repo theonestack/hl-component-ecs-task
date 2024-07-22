@@ -241,11 +241,11 @@ CloudFormation do
     ebs_volumes = external_parameters.fetch(:ebs_volumes, [])
     ebs_volumes.each do |ebs_volume|
       EBS_Volume(ebs_volume['name']) do
-        Size: 100
-        VolumeType: "gp3"
+        Size 100
+        VolumeType "gp3"
       end
-      mount_points << { ContainerPath: ebs_volume['container_path'], SourceVolume: Ref(:EBS_Volume(ebs_volume['name'])), ReadOnly: false}
-      volumes <<  {Name: Ref(:EBS_Volume(ebs_volume['name'])), ConfiguredAtLaunch: true }
+      mount_points << { ContainerPath: ebs_volume['container_path'], SourceVolume: Ref(:ebs_volume['name']), ReadOnly: false}
+      volumes <<  {Name: Ref(:ebs_volume['name']), ConfiguredAtLaunch: true }
       task_def.merge!({MountPoints: mount_points })
       task_def.merge!({Volumes: volumes })
     end
