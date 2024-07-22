@@ -240,9 +240,8 @@ CloudFormation do
     # add ebs volumes
     ebs_volumes = external_parameters.fetch(:ebs_volumes, [])
     ebs_volumes.each do |ebs_volume|
-          mount_points << { ContainerPath: ebs_volume['name'], SourceVolume: ebs_volume['source_volume'], ReadOnly: false}
-          volumes <<  {Name: ebs_volume['name'], ConfiguredAtLaunch: true }
-        end
+      mount_points << { ContainerPath: ebs_volume['name'], SourceVolume: ebs_volume['source_volume'], ReadOnly: false}
+      volumes <<  {Name: ebs_volume['name'], ConfiguredAtLaunch: true }
       task_def.merge!({MountPoints: mount_points })
       task_def.merge!({Volumes: volumes })
     end
