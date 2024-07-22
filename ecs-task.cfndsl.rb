@@ -126,7 +126,10 @@ CloudFormation do
         EC2_Volume(ebs_volume['name']) do
           Size 100
           VolumeType "gp3"
+          AvailabilityZone Ref(:EbsAZ)
         end
+        
+        task_constraints << {Type: "memberOf", Expression: "attribute:ecs.availability-zone in #{Ref(:EbsAZ)}"}
         mount_points << { ContainerPath: ebs_volume['container_path'], SourceVolume: Ref(ebs_volume['name']), ReadOnly: false}
         task_volumes << { Name: Ref(ebs_volume['name']), ConfiguredAtLaunch: true }
         task_def.merge!({MountPoints: mount_points })
@@ -311,8 +314,6 @@ CloudFormation do
   
       end
     end
-
-    print("Task Volumes: #{task_volumes}")
 
     task_type = external_parameters.fetch(:task_type, 'EC2')
     unless task_definition.empty?

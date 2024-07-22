@@ -7,6 +7,7 @@ CfhighlanderTemplate do
     Parameters do
       ComponentParam 'EnvironmentName', 'dev', isGlobal: true
       ComponentParam 'EnvironmentType', 'development', allowedValues: ['development','production'], isGlobal: true
+      ComponentParam 'EbsAZ', ''
 
       task_definition.each do |task_def, task|
         if task.has_key?('tag_param')
