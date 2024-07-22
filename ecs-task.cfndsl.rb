@@ -21,6 +21,7 @@ CloudFormation do
     }
 
     definitions, task_volumes, secrets = Array.new(4){[]}
+    task_constraints =[];
     secrets_policy = {}
 
     task_definition = external_parameters.fetch(:task_definition, {})
@@ -253,7 +254,6 @@ CloudFormation do
     end
 
     # add task placement constraints 
-    task_constraints =[];
     task_placement_constraints = external_parameters.fetch(:task_placement_constraints, [])
     task_placement_constraints.each do |cntr|
       object = {Type: "memberOf"} 
