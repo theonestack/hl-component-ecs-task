@@ -128,7 +128,7 @@ CloudFormation do
           VolumeType "gp3"
         end
         mount_points << { ContainerPath: ebs_volume['container_path'], SourceVolume: Ref(:ebs_volume['name']), ReadOnly: false}
-        task_volumes <<  {Name: Ref(:ebs_volume['name']), ConfiguredAtLaunch: true }
+        task_volumes << { Name: Ref(:ebs_volume['name']), ConfiguredAtLaunch: true }
         task_def.merge!({MountPoints: mount_points })
       end
 
@@ -311,6 +311,8 @@ CloudFormation do
   
       end
     end
+
+    print("Task Volumes: #{task_volumes}")
 
     task_type = external_parameters.fetch(:task_type, 'EC2')
     unless task_definition.empty?
