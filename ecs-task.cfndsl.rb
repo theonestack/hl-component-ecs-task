@@ -127,8 +127,8 @@ CloudFormation do
           Size 100
           VolumeType "gp3"
         end
-        mount_points << { ContainerPath: ebs_volume['container_path'], SourceVolume: Ref(:ebs_volume['name']), ReadOnly: false}
-        task_volumes << { Name: Ref(:ebs_volume['name']), ConfiguredAtLaunch: true }
+        mount_points << { ContainerPath: ebs_volume['container_path'], SourceVolume: Ref(ebs_volume['name']), ReadOnly: false}
+        task_volumes << { Name: Ref(ebs_volume['name']), ConfiguredAtLaunch: true }
         task_def.merge!({MountPoints: mount_points })
       end
 
