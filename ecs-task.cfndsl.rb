@@ -124,15 +124,15 @@ CloudFormation do
       # add ebs volumes
       ebs_volumes = external_parameters.fetch(:ebs_volumes, [])
       ebs_volumes.each do |ebs_volume|
-        EC2_Volume(ebs_volume['name']) do
-          Size 100
-          VolumeType "gp3"
-          AvailabilityZone Ref(:EbsAZ)
-        end
+        # EC2_Volume(ebs_volume['name']) do
+        #   Size 100
+        #   VolumeType "gp3"
+        #   AvailabilityZone Ref(:EbsAZ)
+        # end
         
         task_constraints << {Type: "memberOf", Expression: "attribute:ecs.availability-zone in #{Ref(:EbsAZ)}"}
-        mount_points << { ContainerPath: ebs_volume['container_path'], SourceVolume: Ref(ebs_volume['name']), ReadOnly: false}
-        task_volumes << { Name: Ref(ebs_volume['name']), ConfiguredAtLaunch: true }
+        mount_points << { ContainerPath: ebs_volume['container_path'], SourceVolume: ebs_volume['name'], ReadOnly: false}
+        task_volumes << { Name: ebs_volume['name'], ConfiguredAtLaunch: true }
         task_def.merge!({MountPoints: mount_points })
       end
 
