@@ -240,7 +240,7 @@ CloudFormation do
     # add ebs volumes
     ebs_volumes = external_parameters.fetch(:ebs_volumes, [])
     ebs_volumes.each do |ebs_volume|
-      EBS_Volume(ebs_volume['name']) do
+      EC2_Volume(ebs_volume['name']) do
         Size 100
         VolumeType "gp3"
       end
