@@ -38,7 +38,7 @@ describe 'compiled component ecs-task' do
       end
       
       it "to have property ContainerDefinitions" do
-          expect(resource["Properties"]["ContainerDefinitions"]).to eq([{"Name"=>"nginx", "Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"nginx/nginx"}, ":", "latest"]]}, "LogConfiguration"=>{"LogDriver"=>"awslogs", "Options"=>{"awslogs-group"=>{"Ref"=>"LogGroup"}, "awslogs-region"=>{"Ref"=>"AWS::Region"}, "awslogs-stream-prefix"=>"nginx"}}, "DependsOn"=>[{"ContainerName"=>"db", "Condition"=>"START"}]}, {"Name"=>"db", "Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"/postgres"}, ":", "latest"]]}, "LogConfiguration"=>{"LogDriver"=>"awslogs", "Options"=>{"awslogs-group"=>{"Ref"=>"LogGroup"}, "awslogs-region"=>{"Ref"=>"AWS::Region"}, "awslogs-stream-prefix"=>"db"}}, "Essential"=>false, "PortMappings"=>[{"ContainerPort"=>5432}]}])
+          expect(resource["Properties"]["ContainerDefinitions"]).to eq([{"Name"=>"nginx", "Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"nginx/nginx"}, ":", "latest"]]}, "LogConfiguration"=>{"LogDriver"=>"awslogs", "Options"=>{"awslogs-group"=>{"Ref"=>"LogGroup"}, "awslogs-region"=>{"Ref"=>"AWS::Region"}, "awslogs-stream-prefix"=>"nginx"}}, "DependsOn"=>[{"ContainerName"=>"db", "Condition"=>"START"}]}, {"Name"=>"db", "Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"postgres"}, ":", "latest"]]}, "LogConfiguration"=>{"LogDriver"=>"awslogs", "Options"=>{"awslogs-group"=>{"Ref"=>"LogGroup"}, "awslogs-region"=>{"Ref"=>"AWS::Region"}, "awslogs-stream-prefix"=>"db"}}, "Essential"=>false, "PortMappings"=>[{"ContainerPort"=>5432}]}])
       end
       
       it "to have property RequiresCompatibilities" do
