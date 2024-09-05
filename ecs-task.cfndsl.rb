@@ -10,7 +10,7 @@ CloudFormation do
 
     tags = external_parameters.fetch(:tags, [])
     tags.each do |key,value|
-      task_tags << { Key: key, Value: value }
+      task_tags << { Key: FnSub(key), Value: FnSub(value) }
     end
 
     log_retention = external_parameters.fetch(:log_retention, 7)
