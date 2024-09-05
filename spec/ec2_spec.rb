@@ -46,7 +46,7 @@ describe 'compiled component ecs-task' do
       end
       
       it "to have property Tags" do
-          expect(resource["Properties"]["Tags"]).to eq([{"Key"=>"Name", "Value"=>"ecs-task"}, {"Key"=>"Environment", "Value"=>{"Ref"=>"EnvironmentName"}}, {"Key"=>"EnvironmentType", "Value"=>{"Ref"=>"EnvironmentType"}}, {"Key"=>"CostCenter", "Value"=>"TeamA"}])
+          expect(resource["Properties"]["Tags"]).to eq([{"Key"=>"Name", "Value"=>"ecs-task"}, {"Key"=>"Environment", "Value"=>{"Ref"=>"EnvironmentName"}}, {"Key"=>"EnvironmentType", "Value"=>{"Ref"=>"EnvironmentType"}}, {"Key"=>{"Fn::Sub"=>"CostCenter"}, "Value"=>{"Fn::Sub"=>"TeamA"}}])
       end
       
     end
