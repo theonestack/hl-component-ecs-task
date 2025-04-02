@@ -32,7 +32,7 @@ CloudFormation do
 
       image_repo = task.has_key?('repo') ? "#{task['repo']}/" : ''
       image_name = task.has_key?('image') ? task['image'] : task_name
-      image_tag = task.has_key?('tag') ? "#{task['tag']}" : 'latest'
+      image_tag = task.has_key?('tag') ? task['tag'] : 'latest'
       image_tag = task.has_key?('tag_param') ? Ref("#{task['tag_param']}") : image_tag
 
       # create main definition
@@ -184,7 +184,8 @@ CloudFormation do
       task_def.merge!({ ExtraHosts: task['extra_hosts'] }) if task.has_key?('extra_hosts')
 
       if task.key?('secrets')
-      
+        secrets = []
+
         if task['secrets'].key?('ssm')
           secrets.push *task['secrets']['ssm'].map {|k,v| { Name: k, ValueFrom: v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }}
           resources = task['secrets']['ssm'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }
