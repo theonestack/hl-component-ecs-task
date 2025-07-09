@@ -80,7 +80,7 @@ describe 'compiled component ecs-task' do
       end
       
       it "to have property ContainerDefinitions" do
-          expect(resource["Properties"]["ContainerDefinitions"]).to eq([{"Name"=>"nginx","Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"nginx/nginx"}, ":", "latest"]]},"LogConfiguration"=>{"LogDriver"=>"awslogs", "Options"=>{"awslogs-group"=>{"Ref"=>"LogGroup"}, "awslogs-region"=>{"Ref"=>"AWS::Region"}, "awslogs-stream-prefix"=>"nginx"}},"VersionConsistecy"=>"disabled"}])
+          expect(resource["Properties"]["ContainerDefinitions"]).to eq([{"Name"=>"nginx","Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"nginx/nginx"}, ":", "latest"]]},"LogConfiguration"=>{"LogDriver"=>"awslogs", "Options"=>{"awslogs-group"=>{"Ref"=>"LogGroup"}, "awslogs-region"=>{"Ref"=>"AWS::Region"}, "awslogs-stream-prefix"=>"nginx"}},"VersionConsistency"=>"disabled"}])
       end
       
       it "to have property RequiresCompatibilities" do
