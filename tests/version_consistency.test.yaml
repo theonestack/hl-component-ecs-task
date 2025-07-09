@@ -1,0 +1,21 @@
+test_metadata:
+  type: config
+  name: consistency
+  description: VersionConsistency property
+
+# Insert your tests here
+task_definition:
+  nginx:
+    repo: nginx
+    image: nginx
+    version_consistency: disabled
+
+targetgroup:
+  name: nginx
+  container: nginx
+  port: 80
+  protocol: http
+  listener: http
+  healthcheck:
+    path: /
+    code: 200
