@@ -1,6 +1,6 @@
 test_metadata:
   type: config
-  name: consistency
+  name: version_consistency
   description: VersionConsistency property
 
 # Insert your tests here
@@ -19,3 +19,8 @@ targetgroup:
   healthcheck:
     path: /
     code: 200
+
+iam_policies:
+  s3:
+    action:
+      - s3:Get*

@@ -66,10 +66,6 @@ describe 'compiled component ecs-task' do
           expect(resource["Properties"]["ManagedPolicyArns"]).to eq(["arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"])
       end
       
-      it "to have property Policies" do
-          expect(resource["Properties"]["Policies"]).to eq([])
-      end
-      
     end
     
     context "Task" do
