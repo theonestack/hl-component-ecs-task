@@ -20,8 +20,9 @@ CloudFormation do
       RetentionInDays log_retention
     }
 
-    definitions, task_volumes, secrets = Array.new(4){[]}
+    definitions, task_volumes, secrets = Array.new(3){[]}
     secrets_policy = {}
+    resources_ssm, resources_secretsmanager, resources_secrets = Array.new(3){[]}
 
     task_definition = external_parameters.fetch(:task_definition, {})
     task_definition.each do |task_name, task|
@@ -189,31 +190,19 @@ CloudFormation do
 
         if task['secrets'].key?('ssm')
           secrets.push *task['secrets']['ssm'].map {|k,v| { Name: k, ValueFrom: v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }}
-          resources = task['secrets']['ssm'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }
-          secrets_policy['ssm-secrets'] = {
-            'action' => 'ssm:GetParameters',
-            'resource' => resources
-          }
+          resources_ssm = resources_ssm.union(task['secrets']['ssm'].values)
           task['secrets'].reject! { |k| k == 'ssm' }
         end
         
         if task['secrets'].key?('secretsmanager')
           secrets.push *task['secrets']['secretsmanager'].map {|k,v| { Name: k, ValueFrom: v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}") : v }}
-          resources = task['secrets']['secretsmanager'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}-*") : v }
-          secrets_policy['secretsmanager'] = {
-            'action' => 'secretsmanager:GetSecretValue',
-            'resource' => resources
-          }
+          resources_secretsmanager = resources_secretsmanager.union(task['secrets']['secretsmanager'].values)
           task['secrets'].reject! { |k| k == 'secretsmanager' }
         end
 
         unless task['secrets'].empty?
           secrets.push *task['secrets'].map {|k,v| { Name: k, ValueFrom: v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }}
-          resources = task['secrets'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }
-          secrets_policy['ssm-secrets-inline'] = {
-            'action' => 'ssm:GetParameters',
-            'resource' => resources
-          }
+          resources_secrets = resources_secrets.union(task['secrets'].values)
         end
         
         if secrets.any?
@@ -226,6 +215,30 @@ CloudFormation do
 
     end
 
+    if !resources_ssm.empty?
+      resources_ssm = resources_ssm.uniq.map {|v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }
+      secrets_policy["ssm-secrets"] = {
+       'action' => 'ssm:GetParameters',
+       'resource' => resources_ssm
+      }
+    end
+
+    if !resources_secretsmanager.empty?
+      resources_secretsmanager = resources_secretsmanager.uniq.map {|v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}-*") : v }
+      secrets_policy["secretsmanager"] = {
+       'action' => 'secretsmanager:GetSecretValue',
+       'resource' => resources_secretsmanager
+      }
+    end
+
+    if !resources_secrets.empty?
+      resources_secrets = resources_secrets.uniq.map {|v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }
+      secrets_policy["ssm-secrets-inline"] = {
+       'action' => 'ssm:GetParameters',
+       'resource' => resources_secrets
+      }
+    end
+    
     # add docker volumes
     volumes = external_parameters.fetch(:volumes, [])
     volumes.each do |volume|
