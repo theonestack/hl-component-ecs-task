@@ -4,7 +4,9 @@ CloudFormation do
     export = external_parameters.fetch(:export_name, external_parameters[:component_name]) if export.nil?
     
     task_tags = []
-    task_tags << { Key: "Name", Value: external_parameters[:component_name] }
+    if external_parameters[:tags]["Name"].nil?
+      task_tags << { Key: "Name", Value: external_parameters[:component_name] }
+    end
     task_tags << { Key: "Environment", Value: Ref("EnvironmentName") }
     task_tags << { Key: "EnvironmentType", Value: Ref("EnvironmentType") }
 
