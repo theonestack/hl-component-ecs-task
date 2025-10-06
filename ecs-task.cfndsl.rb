@@ -20,7 +20,7 @@ CloudFormation do
       RetentionInDays log_retention
     }
 
-    definitions, task_volumes, secrets = Array.new(4){[]}
+    definitions, task_volumes, secrets = Array.new(3){[]}
     secrets_policy = {}
 
     task_definition = external_parameters.fetch(:task_definition, {})
@@ -190,7 +190,7 @@ CloudFormation do
         if task['secrets'].key?('ssm')
           secrets.push *task['secrets']['ssm'].map {|k,v| { Name: k, ValueFrom: v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }}
           resources = task['secrets']['ssm'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }
-          secrets_policy['ssm-secrets'] = {
+          secrets_policy["ssm-secrets-#{task_name}"] = {
             'action' => 'ssm:GetParameters',
             'resource' => resources
           }
@@ -200,7 +200,7 @@ CloudFormation do
         if task['secrets'].key?('secretsmanager')
           secrets.push *task['secrets']['secretsmanager'].map {|k,v| { Name: k, ValueFrom: v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}") : v }}
           resources = task['secrets']['secretsmanager'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}-*") : v }
-          secrets_policy['secretsmanager'] = {
+          secrets_policy["secretsmanager-#{task_name}"] = {
             'action' => 'secretsmanager:GetSecretValue',
             'resource' => resources
           }
@@ -210,7 +210,7 @@ CloudFormation do
         unless task['secrets'].empty?
           secrets.push *task['secrets'].map {|k,v| { Name: k, ValueFrom: v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }}
           resources = task['secrets'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }
-          secrets_policy['ssm-secrets-inline'] = {
+          secrets_policy["ssm-secrets-inline-#{task_name}"] = {
             'action' => 'ssm:GetParameters',
             'resource' => resources
           }
