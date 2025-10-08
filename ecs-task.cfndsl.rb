@@ -6,7 +6,8 @@ CloudFormation do
     task_tags = []
     if external_parameters[:tags]["Name"].nil?
       task_tags << { Key: "Name", Value: external_parameters[:component_name] }
-    end
+    end unless external_parameters[:tags].nil?
+
     task_tags << { Key: "Environment", Value: Ref("EnvironmentName") }
     task_tags << { Key: "EnvironmentType", Value: Ref("EnvironmentType") }
 
