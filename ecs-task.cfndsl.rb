@@ -186,7 +186,7 @@ CloudFormation do
       task_def.merge!({DependsOn: depends_on }) if depends_on.length > 0
       task_def.merge!({ ExtraHosts: task['extra_hosts'] }) if task.has_key?('extra_hosts')
       task_def.merge!({VersionConsistency: task['version_consistency']}) if task.has_key?('version_consistency')
-      task_def.merge!({ResourceRequirement: task['resource_requirement']}) if task.has_key?('resource_requirement')
+      task_def.merge!({ResourceRequirements: task['resource_requirements']}) if task.has_key?('resource_requirements')
 
       if task.key?('secrets')
         secrets = []

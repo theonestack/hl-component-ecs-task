@@ -9,7 +9,7 @@ task_definition:
     repo: nginx
     image: nginx
     version_consistency: disabled
-    resource_requirement:
+    resource_requirements:
       - Type: 'GPU'
         Value: 1
 
