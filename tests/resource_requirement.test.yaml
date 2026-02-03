@@ -1,0 +1,29 @@
+test_metadata:
+  type: config
+  name: resource_requirement
+  description: ResourceRequirement property
+
+# Insert your tests here
+task_definition:
+  nginx:
+    repo: nginx
+    image: nginx
+    version_consistency: disabled
+    resource_requirement:
+      - Type: 'GPU'
+        Value: 1
+
+targetgroup:
+  name: nginx
+  container: nginx
+  port: 80
+  protocol: http
+  listener: http
+  healthcheck:
+    path: /
+    code: 200
+
+iam_policies:
+  s3:
+    action:
+      - s3:Get*
