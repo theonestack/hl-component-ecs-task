@@ -4,7 +4,7 @@ describe 'compiled component ecs-task' do
   
   context 'cftest' do
     it 'compiles test' do
-      expect(system("cfhighlander cftest #{@validate} --no-validate --tests tests/resource_requirement.test.yaml")).to be_truthy
+      expect(system("cfhighlander cftest #{@validate} --tests tests/resource_requirement.test.yaml")).to be_truthy
     end      
   end
   
@@ -76,7 +76,7 @@ describe 'compiled component ecs-task' do
       end
       
       it "to have property ContainerDefinitions" do
-          expect(resource["Properties"]["ContainerDefinitions"]).to eq([{"Name"=>"nginx","ResourceRequirement" => [{"Type" => "GPU", "Value" => 1}],"Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"nginx/nginx"}, ":", "latest"]]},"LogConfiguration"=>{"LogDriver"=>"awslogs", "Options"=>{"awslogs-group"=>{"Ref"=>"LogGroup"}, "awslogs-region"=>{"Ref"=>"AWS::Region"}, "awslogs-stream-prefix"=>"nginx"}},"VersionConsistency"=>"disabled"}])
+          expect(resource["Properties"]["ContainerDefinitions"]).to eq([{"Name"=>"nginx","ResourceRequirements" => [{"Type" => "GPU", "Value" => 1}],"Image"=>{"Fn::Join"=>["", [{"Fn::Sub"=>"nginx/nginx"}, ":", "latest"]]},"LogConfiguration"=>{"LogDriver"=>"awslogs", "Options"=>{"awslogs-group"=>{"Ref"=>"LogGroup"}, "awslogs-region"=>{"Ref"=>"AWS::Region"}, "awslogs-stream-prefix"=>"nginx"}},"VersionConsistency"=>"disabled"}])
       end
       
       it "to have property RequiresCompatibilities" do
