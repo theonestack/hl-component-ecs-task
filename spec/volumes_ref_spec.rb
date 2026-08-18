@@ -34,9 +34,10 @@ describe 'compiled component ecs-task' do
 
       it "has volume with host path from string format" do
         volumes = resource["Properties"]["Volumes"]
-        test_volume = volumes.find { |v| v.is_a?(Hash) && v["Name"].is_a?(Hash) == false && v["Name"] == "test" }
+        # "test:/test" creates {Name: {Fn::Sub: "test"}, Host: {SourcePath: {Fn::Sub: "/test"}}}
+        test_volume = volumes.find { |v| v["Name"].is_a?(Hash) && v["Name"]["Fn::Sub"] == "test" }
         expect(test_volume).not_to be_nil
-        expect(test_volume["Host"]["SourcePath"]).to eq("/test")
+        expect(test_volume["Host"]["SourcePath"]).to eq({"Fn::Sub" => "/test"})
       end
 
       it "has MountPoints on the container" do
@@ -49,7 +50,7 @@ describe 'compiled component ecs-task' do
       it "has a mount point with Fn::Sub reference" do
         container = resource["Properties"]["ContainerDefinitions"][0]
         mount_points = container["MountPoints"]
-        # Check that the CFN-style mount_point object is included
+        # The last mount uses CFN-style object with Fn::Sub SourceVolume
         ref_mount = mount_points.find { |m| m["SourceVolume"].is_a?(Hash) }
         expect(ref_mount).not_to be_nil
         expect(ref_mount["ContainerPath"]).to eq("/data")
