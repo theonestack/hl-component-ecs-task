@@ -50,10 +50,10 @@ describe 'compiled component ecs-task' do
       it "has a mount point with Fn::Sub reference" do
         container = resource["Properties"]["ContainerDefinitions"][0]
         mount_points = container["MountPoints"]
-        # The last mount uses CFN-style object with Fn::Sub SourceVolume
-        ref_mount = mount_points.find { |m| m["SourceVolume"].is_a?(Hash) }
-        expect(ref_mount).not_to be_nil
+        # The last mount point is the explicit CFN-style object
+        ref_mount = mount_points.last
         expect(ref_mount["ContainerPath"]).to eq("/data")
+        expect(ref_mount["SourceVolume"]).to be_a(Hash)
         expect(ref_mount["ReadOnly"]).to eq(false)
       end
     end
