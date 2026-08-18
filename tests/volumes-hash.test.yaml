@@ -1,0 +1,26 @@
+test_metadata:
+  type: config
+  name: volumes-hash
+  description: Test volumes as hash format and mount_points key
+
+task_type: EC2
+network_mode: host
+
+volumes:
+  s3-data:
+    host_path: /mnt/s3
+  efs-shared:
+    host_path: /mnt/efs
+
+task_definition:
+  train:
+    repo: myrepo
+    image: training
+    tag_param: ContainerVersion
+    mount_points:
+      - ContainerPath: /mnt/s3
+        SourceVolume: s3-data
+        ReadOnly: false
+      - ContainerPath: /mnt/efs
+        SourceVolume: efs-shared
+        ReadOnly: true
