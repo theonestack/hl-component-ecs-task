@@ -112,6 +112,14 @@ CloudFormation do
         task_def.merge!({MountPoints: mount_points })
       end
 
+      # support mount_points key (CFN-style objects)
+      if task.key?('mount_points')
+        task['mount_points'].each do |mp|
+          mount_points << mp
+        end
+        task_def.merge!({MountPoints: mount_points })
+      end
+
       # add volumes from
       volumes_from = []
       if task.key?('volumes_from')
@@ -232,15 +240,27 @@ CloudFormation do
 
     # add docker volumes
     volumes = external_parameters.fetch(:volumes, [])
-    volumes.each do |volume|
-      if volume.is_a? String 
-        parts = volume.split(':')
-        object = { Name: FnSub(parts[0])}
-        object.merge!({ Host: { SourcePath: FnSub(parts[1]) }}) if parts[1]
-      else
-        object = volume
+    if volumes.is_a? Hash
+      volumes.each do |name, config|
+        object = { Name: name.to_s }
+        if config.is_a? Hash
+          object.merge!({ Host: { SourcePath: config['host_path'] }}) if config['host_path']
+        elsif config.is_a? String
+          object.merge!({ Host: { SourcePath: config }})
+        end
+        task_volumes << object
       end
-      task_volumes << object
+    else
+      volumes.each do |volume|
+        if volume.is_a? String 
+          parts = volume.split(':')
+          object = { Name: FnSub(parts[0])}
+          object.merge!({ Host: { SourcePath: FnSub(parts[1]) }}) if parts[1]
+        else
+          object = volume
+        end
+        task_volumes << object
+      end
     end
 
     # add task placement constraints 
