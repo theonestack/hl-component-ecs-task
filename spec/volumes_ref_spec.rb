@@ -8,7 +8,7 @@ describe 'compiled component ecs-task' do
     end      
   end
   
-  let(:template) { YAML.load_file("#{File.dirname(__FILE__)}/../out/tests/volumes-ref/ecs-task.compiled.yaml") }
+  let(:template) { YAML.load_file("#{File.dirname(__FILE__)}/../out/tests/ecs_service_with_volumes_that_include_a_Ref/ecs-task.compiled.yaml") }
   
   context "Resource" do
 
