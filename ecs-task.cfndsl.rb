@@ -198,6 +198,7 @@ CloudFormation do
 
       if task.key?('secrets')
         secrets = []
+        secrets_resources = []
 
         if task['secrets'].key?('ssm')
           secrets.push *task['secrets']['ssm'].map {|k,v| { Name: k, ValueFrom: v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter#{v}") : v }}
@@ -211,12 +212,32 @@ CloudFormation do
         
         if task['secrets'].key?('secretsmanager')
           secrets.push *task['secrets']['secretsmanager'].map {|k,v| { Name: k, ValueFrom: v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}") : v }}
-          resources = task['secrets']['secretsmanager'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}-*") : v }
+          secrets_resources |= task['secrets']['secretsmanager'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}-*") : v }
           secrets_policy["secretsmanager-#{task_name}"] = {
             'action' => 'secretsmanager:GetSecretValue',
-            'resource' => resources
+            'resource' => secrets_resources
           }
           task['secrets'].reject! { |k| k == 'secretsmanager' }
+        end
+
+        if task['secrets'].key?('secretsmanager-hash-password')
+          secrets.push *task['secrets']['secretsmanager-hash-password'].map {|k,v| { Name: k, ValueFrom: FnJoin('', [ v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}") : v, ':password::'])   }}
+          secrets_resources |= task['secrets']['secretsmanager-hash-password'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}-*") : v }
+          secrets_policy["secretsmanager-#{task_name}"] = {
+            'action' => 'secretsmanager:GetSecretValue',
+            'resource' => secrets_resources
+          }
+          task['secrets'].reject! { |k| k == 'secretsmanager-hash-password' }
+        end
+
+        if task['secrets'].key?('secretsmanager-hash-username')
+          secrets.push *task['secrets']['secretsmanager-hash-username'].map {|k,v| { Name: k, ValueFrom: FnJoin('', [ v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}") : v, ':username::'])   }}
+          secrets_resources |= task['secrets']['secretsmanager-hash-username'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}-*") : v }
+          secrets_policy["secretsmanager-#{task_name}"] = {
+            'action' => 'secretsmanager:GetSecretValue',
+            'resource' => secrets_resources
+          }
+          task['secrets'].reject! { |k| k == 'secretsmanager-hash-username' }
         end
 
         unless task['secrets'].empty?
