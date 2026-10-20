@@ -2,9 +2,6 @@ name: cftest
 
 on: [push, pull_request]
 
-permissions:
-  contents: write
-
 jobs:
   rspec:
     runs-on: ubuntu-latest
@@ -22,9 +19,8 @@ jobs:
         EOF
     - name: Run rspec in cfhighlander container
       run: |
+        chmod -R a+rwX "$GITHUB_WORKSPACE"
         docker run --rm \
-          --user "$(id -u):$(id -g)" \
-          -e HOME=/home/cfhighlander \
           -v "$GITHUB_WORKSPACE":/work \
           -v /tmp/no_validate.rb:/tmp/no_validate.rb:ro \
           -w /work \
