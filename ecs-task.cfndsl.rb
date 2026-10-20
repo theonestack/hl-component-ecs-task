@@ -196,8 +196,6 @@ CloudFormation do
       task_def.merge!({VersionConsistency: task['version_consistency']}) if task.has_key?('version_consistency')
       task_def.merge!({ResourceRequirements: task['resource_requirements']}) if task.has_key?('resource_requirements')
 
-
-      require 'pp'
       if task.key?('secrets')
         secrets = []
 
