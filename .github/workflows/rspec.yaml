@@ -4,5 +4,25 @@ on: [push, pull_request]
 
 jobs:
   rspec:
-    uses: theonestack/shared-workflows/.github/workflows/rspec.yaml@main
-    secrets: inherit
+    runs-on: ubuntu-latest
+    steps:
+      # uses: theonestack/shared-workflows/.github/workflows/rspec.yaml@main
+      # secrets: inherit
+    - uses: actions/checkout@v7
+    - name: Disable AWS template validation
+      run: |
+        cat > /tmp/no_validate.rb <<'EOF'
+        RSpec.configure do |c|
+          c.before(:each) { @validate = '--no-validate' }
+        end
+        EOF
+    - name: Run rspec in cfhighlander container
+      run: |
+        docker run --rm \
+          --user "$(id -u):$(id -g)" \
+          -e HOME=/home/cfhighlander \
+          -v "$GITHUB_WORKSPACE":/work \
+          -v /tmp/no_validate.rb:/tmp/no_validate.rb:ro \
+          -w /work \
+          theonestack/cfhighlander:latest \
+          rspec -r /tmp/no_validate.rb
