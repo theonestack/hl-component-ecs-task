@@ -208,10 +208,19 @@ CloudFormation do
           }
           task['secrets'].reject! { |k| k == 'ssm' }
         end
-        
+
         if task['secrets'].key?('secretsmanager')
-          secrets.push *task['secrets']['secretsmanager'].map {|k,v| { Name: k, ValueFrom: v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}") : v }}
-          resources = task['secrets']['secretsmanager'].map {|k,v| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}-*") : v }
+          secretsmanager = task['secrets']['secretsmanager']
+          secretsmanager_arn  = lambda { |v, suffix = ''| v.is_a?(String) && v.start_with?('/') ? FnSub("arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:#{v}#{suffix}") : v }
+          secretsmanager_json = lambda { |v| v.is_a?(Hash) && v.key?('secret') && v.key?('key') }
+          secrets.push *secretsmanager.map { |k,v|
+            if secretsmanager_json.call(v)
+              { Name: k, ValueFrom: FnJoin('', [secretsmanager_arn.call(v['secret']), ":#{v['key']}:#{v.fetch('version_stage', '')}:#{v.fetch('version_id', '')}"]) }
+            else
+              { Name: k, ValueFrom: secretsmanager_arn.call(v) }
+            end
+          }
+          resources = secretsmanager.values.map { |v| secretsmanager_json.call(v) ? v['secret'] : v }.uniq.map { |s| secretsmanager_arn.call(s, '-*') }
           secrets_policy["secretsmanager-#{task_name}"] = {
             'action' => 'secretsmanager:GetSecretValue',
             'resource' => resources
